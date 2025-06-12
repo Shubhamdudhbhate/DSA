@@ -1,0 +1,148 @@
+#include <iostream>
+#include <queue>
+#include <stack>
+
+using namespace std;
+
+class Node {
+public:
+    int data;
+    Node* left;
+    Node* right;
+
+    Node(int val) {
+        data = val;
+        left = right = nullptr;
+    }
+};
+
+// -------- Recursive Mirror / Invert --------
+Node* mirrorTreeRecursive(Node* root) {
+    if (!root) return nullptr;
+
+    // Mirror left and right subtrees recursively
+    Node* leftMirrored = mirrorTreeRecursive(root->left);
+    Node* rightMirrored = mirrorTreeRecursive(root->right);
+
+    // Swap children
+    root->left = rightMirrored;
+    root->right = leftMirrored;
+
+    return root;
+}
+
+// -------- Iterative Mirror / Invert --------
+Node* mirrorTreeIterative(Node* root) {
+    if (!root) return nullptr;
+    queue<Node*> q;
+    q.push(root);
+
+    while (!q.empty()) {
+        Node* curr = q.front();
+        q.pop();
+
+        // Swap left and right
+        Node* temp = curr->left;
+        curr->left = curr->right;
+        curr->right = temp;
+
+        if (curr->left) q.push(curr->left);
+        if (curr->right) q.push(curr->right);
+    }
+    return root;
+}
+
+// -------- Recursive Delete --------
+void deleteTreeRecursive(Node* root) {
+    if (!root) return;
+
+    // Delete left and right subtrees first
+    deleteTreeRecursive(root->left);
+    deleteTreeRecursive(root->right);
+
+    // Delete current node
+    // cout << "Deleting node " << root->data << "\n";  // Optional debug
+    delete root;
+}
+
+// -------- Iterative Delete (Postorder using two stacks) --------
+void deleteTreeIterative(Node* root) {
+    if (!root) return;
+    stack<Node*> s1, s2;
+    s1.push(root);
+
+    while (!s1.empty()) {
+        Node* curr = s1.top();
+        s1.pop();
+        s2.push(curr);
+
+        if (curr->left) s1.push(curr->left);
+        if (curr->right) s1.push(curr->right);
+    }
+
+    // Delete nodes in postorder sequence
+    while (!s2.empty()) {
+        Node* node = s2.top();
+        s2.pop();
+        // cout << "Deleting node " << node->data << "\n";  // Optional debug
+        delete node;
+    }
+}
+
+// Simple inorder traversal to verify tree structure
+void inorderTraversal(Node* root) {
+    if (!root) return;
+    inorderTraversal(root->left);
+    cout << root->data << " ";
+    inorderTraversal(root->right);
+}
+
+int main() {
+    // Build example tree:
+    //       1
+    //     /   \
+    //    2     3
+    //   / \   / \
+    //  4   5 6   7
+
+    Node* root = new Node(1);
+    root->left = new Node(2);
+    root->right = new Node(3);
+    root->left->left = new Node(4);
+    root->left->right = new Node(5);
+    root->right->left = new Node(6);
+    root->right->right = new Node(7);
+
+    cout << "Original inorder: ";
+    inorderTraversal(root);
+    cout << "\n";
+
+    // Mirror tree recursively
+    mirrorTreeRecursive(root);
+    cout << "Inorder after recursive mirror: ";
+    inorderTraversal(root);
+    cout << "\n";
+
+    // Mirror tree iteratively (mirror again to restore original)
+    mirrorTreeIterative(root);
+    cout << "Inorder after iterative mirror (restored original): ";
+    inorderTraversal(root);
+    cout << "\n";
+
+    // Delete tree recursively
+    deleteTreeRecursive(root);
+    root = nullptr;
+
+    // To demonstrate iterative delete, create tree again
+    root = new Node(1);
+    root->left = new Node(2);
+    root->right = new Node(3);
+
+    // Delete tree iteratively
+    deleteTreeIterative(root);
+    root = nullptr;
+
+    cout << "Trees deleted successfully.\n";
+
+    return 0;
+}
